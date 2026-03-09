@@ -12,5 +12,5 @@
 4. Install cert-manager Operator
 5. Quick Install opr-paas operator
     - https://github.com/belastingdienst/opr-paas
-    - kubectl apply -f https://github.com/belastingdienst/opr-paas/releases/latest/download/install.yaml
-    - kubectl apply -f https://raw.githubusercontent.com/belastingdienst/opr-paas/refs/heads/main/examples/resources/_v1alpha2_paasconfig.yaml
+    - ran 'kubectl apply -f https://github.com/belastingdienst/opr-paas/releases/latest/download/install.yaml'
+    - did NOT use -> as it did not work 'kubectl apply -f https://raw.githubusercontent.com/belastingdienst/opr-paas/refs/heads/main/examples/resources/_v1alpha2_paasconfig.yaml'
