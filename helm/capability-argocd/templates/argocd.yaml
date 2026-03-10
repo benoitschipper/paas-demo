@@ -1,0 +1,46 @@
+---
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: argo-service
+spec:
+  resourceTrackingMethod: annotation+label
+  server:
+    route:
+      enabled: true
+  controller:
+    resources:
+      limits:
+        memory: 2Gi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+  applicationSet:
+    enabled: true
+  sso:
+    dex:
+      openShiftOAuth: true
+    provider: dex
+  rbac:
+    defaultPolicy: ''
+    policy: |-
+      {{- .Values.groups | nindent 6 }}
+    scopes: '[groups]'
+  disableAdmin: true
+  kustomizeBuildOptions: '--load-restrictor LoadRestrictionsNone --enable-helm'
+  resourceExclusions: |
+    - apiGroups:
+        - ""
+      kinds:
+        - Endpoints
+    - apiGroups:
+        - discovery.k8s.io
+      kinds:
+        - EndpointSlice
+    - apiGroups:
+        - kyverno.io
+      kinds:
+        - AdmissionReport
+        - BackgroundScanReport
+        - ClusterAdmissionReport
+        - ClusterBackgroundScanReport

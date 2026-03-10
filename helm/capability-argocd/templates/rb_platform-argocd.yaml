@@ -1,0 +1,13 @@
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: platform-argocd-admin
+subjects:
+  - kind: ServiceAccount
+    name: platform-argocd-argocd-application-controller
+    namespace: platform-argocd
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin

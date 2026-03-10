@@ -1,0 +1,20 @@
+{{- if .Values.git_url }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: paas-bootstrap
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ .Values.paas }}-{{ .Values.capability }}
+  project: default
+  source:
+    path: {{ .Values.git_path }}
+    repoURL: {{ .Values.git_url }}
+    targetRevision: {{ .Values.git_revision }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+{{- end }}

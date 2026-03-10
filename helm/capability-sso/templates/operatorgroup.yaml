@@ -1,0 +1,9 @@
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: keycloak-operator
+spec:
+  targetNamespaces:
+    - {{ .Values.paas }}-{{ .Values.capability }}
+  upgradeStrategy: Default

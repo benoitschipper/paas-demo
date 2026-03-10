@@ -1,0 +1,111 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana
+  labels:
+    dashboards: "grafana"
+spec:
+  route:
+    spec:
+      port:
+        targetPort: proxy-https
+      tls:
+        termination: reencrypt
+      to:
+        kind: Service
+        name: grafana-service
+        weight: 100
+  config:
+    log:
+      mode: "console"
+    auth.anonymous:
+      enabled: "True"
+    auth:
+      disable_login_form: "False"
+      disable_signout_menu: "True"
+    auth.basic:
+      enabled: "True"
+    auth.proxy:
+      enabled: "True"
+      enable_login_token: "True"
+      header_property: "username"
+      header_name: "X-Forwarded-User"
+    users:
+      auto_assign_org_role: Admin
+      editors_can_admin: "True"
+    security:
+      admin_user: root
+      admin_password: secret
+  deployment:
+    spec:
+      stragegy:
+        type: Recreate
+      template:
+        spec:
+          containers:
+            - name: grafana
+              resources:
+                limits:
+                  memory: 1Gi
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+            - name: oauth-proxy
+              image: quay.io/openshift/origin-oauth-proxy:latest
+              imagePullPolicy: IfNotPresent
+              resources:
+                limits:
+                  memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+              ports:
+                - containerPort: 8443
+                  name: proxy-https
+              args:
+                - --https-address=:8443
+                - --provider=openshift
+                - --openshift-service-account=grafana-sa
+                - '--openshift-sar={"namespace": "$(NAMESPACE)", "resource": "services", "verb": "get"}'
+                - --upstream=http://localhost:3000
+                - --tls-cert=/etc/tls/private/tls.crt
+                - --tls-key=/etc/tls/private/tls.key
+                - --cookie-secret=SECRET
+              env:
+                - name: NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.namespace
+              volumeMounts:
+                - mountPath: /etc/tls/private
+                  name: proxy-tls
+          volumes:
+            - name: proxy-tls
+              secret:
+                secretName: grafana-tls
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc
+  persistentVolumeClaim:
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: rook-ceph-block
+  service:
+    metadata:
+      annotations:
+        service.beta.openshift.io/serving-cert-secret-name: grafana-tls
+    spec:
+      ports:
+        - name: proxy-https
+          port: 443
+          protocol: TCP
+          targetPort: proxy-https
+  serviceAccount:
+    metadata:
+      annotations:
+        serviceaccounts.openshift.io/oauth-redirectreference.primary: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"grafana-route"}}'
