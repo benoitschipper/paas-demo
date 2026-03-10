@@ -23,7 +23,7 @@ metadata:
   namespace: openshift-gitops
 subjects:
   - kind: ServiceAccount
-    name: opr-paas-controller-manager
+    name: paas-controller-manager
     namespace: paas-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
