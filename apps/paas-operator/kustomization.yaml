@@ -1,0 +1,23 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - paas-config.yaml
+  - upstream/v3.9.1/
+
+patches:
+  - target:
+      kind: Namespace
+      name: paas-system
+    patch: |
+      - op: add
+        path: /metadata/labels/argocd.argoproj.io~1managed-by
+        value: openshift-gitops
+  - target:
+      kind: Deployment
+      name: paas-controller-manager
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 2

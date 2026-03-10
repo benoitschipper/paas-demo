@@ -1,0 +1,125 @@
+---
+apiVersion: cpet.belastingdienst.nl/v1alpha2
+kind: PaasConfig
+metadata:
+  name: paas-config
+spec:
+  decryptKeySecret:
+    name: example-keys
+    namespace: paas-system
+  # requestor_label: o.lbl
+  clusterwide_argocd_namespace: openshift-gitops
+  components_debug:
+    paas_controller: false
+    secret_controller: false
+  managed_by_label: argocd.argoproj.io/managed-by
+  quota_label: demo-quota
+  debug: false
+  capabilities:
+    argocd:
+      applicationset: paas-argocd
+      custom_fields:
+        groups:
+          template: |
+            {{- define "getRoleSpec" -}}
+            {{- $obj := .Object -}}
+            {{- $roles := $obj.Roles | default list -}}
+            {{- if eq (len $roles) 0 -}}role:admin
+            {{- else if or (has "admin" $roles) (has "edit" $roles) -}}role:admin
+            {{- else -}}role:readonly{{- end -}}
+            {{- end -}}
+            {{- define "getGroupName" -}}
+            {{- $groupName := .GroupName -}}
+            {{- $paasname := .PaasName -}}
+            {{- $group := .Group -}}
+            {{- $query := "" -}}
+            {{- if $group.Query -}}
+            {{- $query = $group.Query -}}
+            {{- end -}}
+            {{- if and (ne $query "") (kindIs "string" $query) (contains "=" $query) }}
+            {{- regexReplaceAll "CN=" (regexFind "CN=[^,]*" $query) "" -}}
+            {{- else -}}
+            {{- printf "%s-%s" $paasname $groupName -}}
+            {{- end -}}
+            {{- end -}}
+            {{- $paasName := .Paas.ObjectMeta.Name -}}
+            {{ printf "%s" `g, system:cluster-admins, role:admin
+            g, cluster-admins, role:admin
+            g, cluster-readers, role:readonly` }}
+            {{- range $groupName, $group := .Paas.Spec.Groups }}
+            g, {{ template "getGroupName" (dict "GroupName" $groupName "Group" $group "PaasName" $paasName) }}, {{ template "getRoleSpec" (dict "Object" $group) }}
+            {{- end -}}
+        git_path:
+          default: .
+        git_revision:
+          default: main
+        git_url:
+          required: true
+      default_permissions:
+        argo-service-argocd-application-controller:
+          - monitoring-edit
+          - alert-routing-edit
+      quotas:
+        clusterwide: true
+        ratio: 1
+        min:
+          limits.memory: 30Gi
+          requests.cpu: '4'
+          requests.memory: 15Gi
+          requests.storage: '2Gi'
+        defaults:
+          limits.memory: 14Gi
+          requests.cpu: '2'
+          requests.memory: 7Gi
+          requests.storage: '1Gi'
+    grafana:
+      applicationset: paas-grafana
+      quotas:
+        defaults:
+          limits.memory: 6Gi
+          requests.cpu: 1
+          requests.memory: 1Gi
+          requests.storage: 2Gi
+      default_permissions:
+        grafana-sa:
+          - cluster-monitoring-view
+    sso:
+      applicationset: paas-sso
+      quotas:
+        defaults:
+          limits.memory: 4Gi
+          requests.cpu: 2
+          requests.memory: 2Gi
+          requests.storage: 10Gi
+  templating:
+    namespaceLabels:
+      argocd.argoproj.io/managed-by: '{{ .Paas.Name }}-argocd'
+      cpet.belastingdienst.nl/created-by: opr-paas
+  validations:
+    paas:
+      allowedQuotas: ^(limits.memory|requests.cpu|requests.memory|requests.storage)$
+      groupName: '^[a-z0-9-]*$'
+      name: '^[a-z0-9-]*$'
+      namespaceName: '^[a-z0-9-]*$'
+      requestor: '^[a-z0-9-]*$'
+    paasConfig:
+      capabilityName: '^[a-z0-9-]*$'
+    paasNs:
+      name: '^[a-z0-9-]*$'
+  rolemappings:
+    default:
+      - admin
+      - monitoring-edit
+      - alert-routing-edit
+    view:
+      - view
+    edit:
+      - edit
+      - monitoring-edit
+      - alert-routing-edit
+    admin:
+      - admin
+      - monitoring-edit
+      - alert-routing-edit
+  feature_flags:
+    group_user_management: allow

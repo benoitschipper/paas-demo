@@ -1,0 +1,23 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - cr_metrics-auth-role.yaml
+  - cr_metrics-reader.yaml
+  - cr_paas-manager-role.yaml
+  - crb_metrics-auth-rolebinding.yaml
+  - crb_paas-manager-rolebinding.yaml
+  - crd_paas.yaml
+  - crd_paasconfig.yaml
+  - crd_paasns.yaml
+  - crt_serving-cert.yaml
+  - d_paas-controller-manager.yaml
+  - iss_selfsigned-issuer.yaml
+  - ns_paas-system.yaml
+  - r_paas-leader-election-role.yaml
+  - rb_paas-leader-election-rolebinding.yaml
+  - s_example-keys.yaml
+  - sa_paas-controller-manager.yaml
+  - svc_webhook-service.yaml
+  - vwc_validating-webhook-configuration.yaml

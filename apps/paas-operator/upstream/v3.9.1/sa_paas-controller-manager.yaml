@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: opr-paas
+    app.kubernetes.io/instance: paas-controller-manager
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: serviceaccount
+    app.kubernetes.io/part-of: opr-paas
+  name: paas-controller-manager
+  namespace: paas-system

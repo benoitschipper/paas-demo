@@ -1,0 +1,103 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: paas-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - argoproj.io
+  resources:
+  - applicationsets
+  verbs:
+  - get
+  - list
+  - patch
+  - watch
+- apiGroups:
+  - cpet.belastingdienst.nl
+  resources:
+  - paas
+  - paasconfig
+  - paasns
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cpet.belastingdienst.nl
+  resources:
+  - paas/finalizers
+  - paasconfig/finalizers
+  - paasns/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - cpet.belastingdienst.nl
+  resources:
+  - paas/status
+  - paasconfig/status
+  - paasns/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - quota.openshift.io
+  resources:
+  - clusterresourcequotas
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterroles
+  verbs:
+  - bind
+- apiGroups:
+  - user.openshift.io
+  resources:
+  - groups
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
