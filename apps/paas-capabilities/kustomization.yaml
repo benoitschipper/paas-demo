@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - appset_paas-argocd.yaml
   - appset_paas-grafana.yaml
+  - appset_paas-sso.yaml
