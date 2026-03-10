@@ -7,7 +7,7 @@ spec:
   decryptKeySecret:
     name: example-keys
     namespace: paas-system
-  # requestor_label: o.lbl
+  requestor_label: demo-label
   clusterwide_argocd_namespace: openshift-gitops
   components_debug:
     paas_controller: false
