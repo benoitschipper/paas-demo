@@ -1,0 +1,13 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sealed-secrets-web
+spec:
+  to:
+    kind: Service
+    name: sealed-secrets-web
+  port:
+    targetPort: public
+  tls:
+    termination: reencrypt

@@ -1,0 +1,64 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: sealed-secrets-web
+
+resources:
+  - consolelink.yaml
+  - namespace.yaml
+  - route.yaml
+
+helmCharts:
+  - name: sealed-secrets-web
+    releaseName: sealed-secrets-web
+    version: 3.2.0
+    repo: https://charts.bakito.net
+    valuesInline:
+      extraContainers:
+        - name: oauth-proxy
+          image: quay.io/openshift/origin-oauth-proxy:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8443
+              name: public
+          args:
+            - --https-address=:8443
+            - --provider=openshift
+            - --openshift-service-account=sealed-secrets-web
+            - --upstream=http://localhost:8080
+            - --tls-cert=/etc/tls/private/tls.crt
+            - --tls-key=/etc/tls/private/tls.key
+            - --cookie-secret=SECRET
+          volumeMounts:
+            - mountPath: /etc/tls/private
+              name: proxy-tls
+      ingress:
+        enabled: false
+      sealedSecrets:
+        serviceName: sealed-secrets-controller
+      serviceAccount:
+        annotations:
+          serviceaccounts.openshift.io/oauth-redirectreference.primary: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"sealed-secrets-web"}}'
+      service:
+        annotations:
+          service.alpha.openshift.io/serving-cert-secret-name: proxy-tls
+        extraPorts:
+          - name: public
+            port: 443
+            protocol: TCP
+            targetPort: public
+      volumes:
+        - name: proxy-tls
+          secret:
+            secretName: proxy-tls
+
+patches:
+  - target:
+      kind: Deployment
+      name: sealed-secrets-web
+    patch: |
+      - op: remove
+        path: /spec/template/spec/containers/0/securityContext/runAsGroup
+      - op: remove
+        path: /spec/template/spec/containers/0/securityContext/runAsUser
