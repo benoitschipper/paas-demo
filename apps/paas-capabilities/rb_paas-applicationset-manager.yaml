@@ -1,0 +1,31 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: paas-applicationset-manager
+  namespace: openshift-gitops
+rules:
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - applicationsets
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: paas-applicationset-manager
+  namespace: openshift-gitops
+subjects:
+  - kind: ServiceAccount
+    name: opr-paas-controller-manager
+    namespace: paas-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: paas-applicationset-manager
