@@ -3,7 +3,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: paas-grafana
-  namespace: platform-argocd
+  namespace: openshift-gitops
 spec:
   generators: []
   goTemplate: true

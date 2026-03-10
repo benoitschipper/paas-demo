@@ -3,7 +3,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: paas-argocd
-  namespace: platform-argocd
+  namespace: openshift-gitops
   annotations:
     argocd.argoproj.io/sync-options: ApplyOutOfSyncOnly=true
 spec:
