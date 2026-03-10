@@ -2,23 +2,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: paas-capabilities
+  annotations:
+    argocd.argoproj.io/compare-options: 'ServerSideDiff=true,IncludeMutationWebhook=true'
+  name: kyverno
 spec:
   destination:
     server: https://kubernetes.default.svc
+    namespace: kyverno
   project: default
   source:
-    path: apps/paas-capabilities
+    path: apps/kyverno
     repoURL: https://github.com/benoitschipper/paas-demo.git
     targetRevision: main
   syncPolicy:
     syncOptions:
-      - RespectIgnoreDifferences=true
+      - ServerSideApply=true
     automated:
       prune: false
       selfHeal: true
-  ignoreDifferences:
-    - group: argoproj.io
-      jsonPointers:
-        - /spec/generators
-      kind: ApplicationSet
