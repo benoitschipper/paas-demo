@@ -3,7 +3,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: paas-grafana
-  namespace: platform-argocd
+  namespace: openshift-gitops
 spec:
   generators: []
   goTemplate: true
@@ -19,7 +19,7 @@ spec:
       project: paas
       source:
         chart: capability-grafana
-        repoURL: ghcr.io/inholland-cloud-minor-2526/paas-capabilities
+        repoURL: ghcr.io/benoitschipper/paas-demo
         targetRevision: 0.1.2
         helm:
           valuesObject:

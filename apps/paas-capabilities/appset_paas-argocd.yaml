@@ -21,7 +21,7 @@ spec:
       project: paas
       source:
         chart: capability-argocd
-        repoURL: ghcr.io/inholland-cloud-minor-2526/paas-capabilities
+        repoURL: ghcr.io/benoitschipper/paas-demo
         targetRevision: 0.1.3
         helm:
           valuesObject:

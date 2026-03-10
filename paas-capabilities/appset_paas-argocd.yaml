@@ -3,7 +3,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: paas-argocd
-  namespace: platform-argocd
+  namespace: openshift-gitops
   annotations:
     argocd.argoproj.io/sync-options: ApplyOutOfSyncOnly=true
 spec:
@@ -21,7 +21,7 @@ spec:
       project: paas
       source:
         chart: capability-argocd
-        repoURL: ghcr.io/inholland-cloud-minor-2526/paas-capabilities
+        repoURL: ghcr.io/benoitschipper/paas-demo
         targetRevision: 0.1.3
         helm:
           valuesObject:
