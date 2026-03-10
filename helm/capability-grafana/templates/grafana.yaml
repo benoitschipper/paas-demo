@@ -39,8 +39,6 @@ spec:
       admin_password: secret
   deployment:
     spec:
-      stragegy:
-        type: Recreate
       template:
         spec:
           containers:
@@ -95,6 +93,8 @@ spec:
         requests:
           storage: 1Gi
       storageClassName: managed-csi
+      stragegy:
+        type: Recreate
   service:
     metadata:
       annotations:
