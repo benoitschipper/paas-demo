@@ -93,8 +93,6 @@ spec:
         requests:
           storage: 1Gi
       storageClassName: managed-csi
-      stragegy:
-        type: Recreate
   service:
     metadata:
       annotations:
