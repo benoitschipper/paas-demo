@@ -1,0 +1,40 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-allow-from-openshift-monitoring-networkpolicy
+  annotations:
+    policies.kyverno.io/title: Generate NetworkPolicy allow-from-openshift-monitoring for PaaS tenants
+    policies.kyverno.io/category: Multi-Tenancy
+    policies.kyverno.io/subject: NetworkPolicy
+    policies.kyverno.io/minversion: 1.6.0
+    policies.kyverno.io/description: >-
+      Generates a NetworkPolicy allowing traffic from openshift-monitoring
+spec:
+  rules:
+  - name: generate-allow-from-openshift-monitoring
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+          selector:
+            matchLabels:
+              cpet.belastingdienst.nl/created-by: opr-paas
+    generate:
+      generateExisting: true
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      name: allow-from-openshift-monitoring
+      synchronize: true
+      namespace: "{{request.object.metadata.name}}"
+      data:
+        spec:
+          ingress:
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  network.openshift.io/policy-group: monitoring
+          podSelector: {}
+          policyTypes:
+          - Ingress

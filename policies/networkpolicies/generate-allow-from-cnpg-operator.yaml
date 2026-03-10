@@ -1,0 +1,42 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-allow-from-cnpg-operator-networkpolicy
+  annotations:
+    policies.kyverno.io/title: Generate NetworkPolicy allow-from-cnpg-operator for PaaS tenants
+    policies.kyverno.io/category: Multi-Tenancy
+    policies.kyverno.io/subject: NetworkPolicy
+    policies.kyverno.io/minversion: 1.6.0
+    policies.kyverno.io/description: >-
+      Generates a NetworkPolicy allowing traffic from cnpg-operator when a Cluster is created
+spec:
+  rules:
+  - name: generate-allow-from-cnpg-operator
+    match:
+      any:
+      - resources:
+          kinds:
+          - postgresql.cnpg.io/v1/Cluster
+          operations:
+          - CREATE
+          namespaceSelector:
+            matchLabels:
+              cpet.belastingdienst.nl/created-by: opr-paas
+    generate:
+      generateExisting: true
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      name: allow-from-cnpg-operator
+      namespace: "{{request.object.metadata.namespace}}"
+      synchronize: true
+      data:
+        spec:
+          podSelector: {}
+          policyTypes:
+          - Ingress
+          ingress:
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  kubernetes.io/metadata.name: cnpg-operator

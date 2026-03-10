@@ -1,0 +1,40 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-allow-from-openshift-ingress-networkpolicy
+  annotations:
+    policies.kyverno.io/title: Generate NetworkPolicy allow-from-openshift-ingress for PaaS tenants
+    policies.kyverno.io/category: Multi-Tenancy
+    policies.kyverno.io/subject: NetworkPolicy
+    policies.kyverno.io/minversion: 1.6.0
+    policies.kyverno.io/description: >-
+      Generates a NetworkPolicy allowing traffic from openshift-ingress
+spec:
+  rules:
+  - name: generate-allow-from-openshift-ingress
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+          selector:
+            matchLabels:
+              cpet.belastingdienst.nl/created-by: opr-paas
+    generate:
+      generateExisting: true
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      name: allow-from-openshift-ingress
+      synchronize: true
+      namespace: "{{request.object.metadata.name}}"
+      data:
+        spec:
+          ingress:
+          - from:
+            - namespaceSelector:
+                matchLabels:
+                  policy-group.network.openshift.io/ingress: ''
+          podSelector: {}
+          policyTypes:
+          - Ingress

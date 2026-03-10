@@ -6,6 +6,9 @@ namespace: kyverno
 
 resources:
   - namespace.yaml
+  - generate-paas-limitrange.yaml
+  - disable-self-provisioning
+  - networkpolicies
 
 helmCharts:
   - name: kyverno

@@ -1,0 +1,36 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: generate-allow-same-namespace-networkpolicy
+  annotations:
+    policies.kyverno.io/title: Generate NetworkPolicy allow-same-namespace for PaaS tenants
+    policies.kyverno.io/category: Multi-Tenancy
+    policies.kyverno.io/subject: NetworkPolicy
+    policies.kyverno.io/minversion: 1.6.0
+    policies.kyverno.io/description: >-
+      Generates a NetworkPolicy allowing traffic within a Namespace
+spec:
+  rules:
+  - name: generate-allow-same-namespace
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+          selector:
+            matchLabels:
+              cpet.belastingdienst.nl/created-by: opr-paas
+    generate:
+      generateExisting: true
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      name: allow-same-namespace
+      synchronize: true
+      namespace: "{{request.object.metadata.name}}"
+      data:
+        spec:
+          podSelector: {}
+          ingress:
+            - from:
+              - podSelector: {}
