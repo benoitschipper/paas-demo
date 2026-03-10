@@ -83,14 +83,14 @@ spec:
       default_permissions:
         grafana-sa:
           - cluster-monitoring-view
-    # sso:
-    #   applicationset: paas-sso
-    #   quotas:
-    #     defaults:
-    #       limits.memory: 4Gi
-    #       requests.cpu: 2
-    #       requests.memory: 2Gi
-    #       requests.storage: 10Gi
+    sso:
+      applicationset: paas-sso
+      quotas:
+        defaults:
+          limits.memory: 4Gi
+          requests.cpu: 2
+          requests.memory: 2Gi
+          requests.storage: 10Gi
   templating:
     namespaceLabels:
       argocd.argoproj.io/managed-by: '{{ .Paas.Name }}-argocd'
