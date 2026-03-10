@@ -4,6 +4,7 @@ kind: Kustomization
 
 resources:
   - paas-config.yaml
+  - app_paas.yaml
   - upstream/v3.9.1/
 
 patches:

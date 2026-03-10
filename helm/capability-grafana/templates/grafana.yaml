@@ -94,7 +94,7 @@ spec:
       resources:
         requests:
           storage: 1Gi
-      storageClassName: rook-ceph-block
+      storageClassName: managed-csi
   service:
     metadata:
       annotations:
