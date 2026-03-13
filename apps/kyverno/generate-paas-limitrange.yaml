@@ -25,6 +25,14 @@ spec:
           selector:
             matchLabels:
              cpet.belastingdienst.nl/created-by: opr-paas
+    exclude:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+          names:
+          - "*-tekton"
+          - "*tekton"
     generate:
       generateExisting: true
       apiVersion: v1
