@@ -42,3 +42,7 @@ spec:
     prod:
       groups:
         - admins
+    tekton:
+      groups:
+        - admins
+        - developers
