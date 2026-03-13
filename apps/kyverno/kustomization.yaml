@@ -7,6 +7,7 @@ namespace: kyverno
 resources:
   - namespace.yaml
   - generate-paas-limitrange.yaml
+  - generate-paas-limitrange tekton.yaml
   - disable-self-provisioning
   - networkpolicies
 
