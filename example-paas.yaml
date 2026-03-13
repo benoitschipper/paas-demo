@@ -12,9 +12,9 @@ spec:
   capabilities:
     argocd:
       custom_fields:
-        git_url: "https://github.com/my-org/my-demo-paas.git"
+        git_url: "https://github.com/benoitschipper/paas-demo.git"
         git_revision: main
-        git_path: .
+        git_path: argocd/app-of-apps
     grafana: {}
     sso: {}
   groups:
