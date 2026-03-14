@@ -39,9 +39,18 @@ spec:
       groups:
         - admins
         - developers
-    prod:
+    tst:
       groups:
         - admins
+        - developers
+    acc:
+      groups:
+        - admins
+        - developers
+    prd:
+      groups:
+        - admins
+        - developers
     tekton:
       groups:
         - admins
