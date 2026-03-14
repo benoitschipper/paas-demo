@@ -1,0 +1,19 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  name: example-paas-config
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: apps/paas-operator
+    repoURL: https://github.com/benoitschipper/paas-demo.git
+    targetRevision: main
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
