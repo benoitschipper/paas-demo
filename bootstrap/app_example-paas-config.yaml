@@ -11,7 +11,7 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    path: apps/paas-operator
+    path: apps/example-paas-config
     repoURL: https://github.com/benoitschipper/paas-demo.git
     targetRevision: main
   syncPolicy:
