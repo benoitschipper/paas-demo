@@ -54,33 +54,33 @@ flowchart TD
     PT([Platform Team])
 
     subgraph Bootstrap ["① Bootstrap — done once"]
-        OP[Install Operators\nArgoCD · Pipelines · cert-manager\nKyverno · Grafana · Sealed Secrets]
-        PC[Apply PaasConfig\nquotas · capabilities · RBAC templates]
-        BA[Bootstrap ArgoCD Applications\npaas-operator · paas-capabilities\nkyverno · sealed-secrets]
+        OP[Install Operators]
+        PC[Apply PaasConfig]
+        BA[Bootstrap ArgoCD Applications]
         OP --> PC --> BA
     end
 
     subgraph GitOps ["② Cluster GitOps — continuous"]
-        AG[ArgoCD openshift-gitops\nwatches this repo]
-        AS[ApplicationSets\npaas-argocd · paas-grafana · paas-sso]
+        AG[ArgoCD openshift-gitops]
+        AS[ApplicationSets]
         AG --> AS
     end
 
     subgraph Team ["③ Team onboarding"]
-        PR[Team submits\nexample-paas.yaml\nPaas CR]
-        PAAS[opr-paas operator\nprovisions environment]
-        NS[Namespaces\ndev · tst · acc · prd · tekton]
-        RBAC[RBAC & Groups\nfrom Paas spec]
+        PR[Team submits Paas CR]
+        PAAS[opr-paas operator]
+        NS[Namespaces]
+        RBAC[RBAC and Groups]
         Q[Resource Quotas]
-        KY[Kyverno generates\nNetwork Policies]
-        ARGO[Team ArgoCD instance\nscoped to team namespaces]
+        KY[Kyverno Network Policies]
+        ARGO[Team ArgoCD instance]
 
         PR --> PAAS
         PAAS --> NS
         PAAS --> RBAC
         PAAS --> Q
         PAAS --> KY
-        AS -->|renders Helm chart\nper Paas CR| ARGO
+        AS -->|renders Helm chart per Paas CR| ARGO
     end
 
     PT --> Bootstrap
