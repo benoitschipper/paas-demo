@@ -58,15 +58,12 @@ flowchart TD
         PC[Apply PaasConfig]
         BA[Bootstrap ArgoCD Applications]
         OP --> PC --> BA
-    end
-
-    subgraph GitOps ["② Cluster GitOps — continuous"]
         AG[ArgoCD openshift-gitops]
         AS[ApplicationSets]
-        AG --> AS
+        BA --> AG --> AS
     end
 
-    subgraph Team ["③ Team onboarding"]
+    subgraph Team ["② Team onboarding"]
         PR[Team submits Paas CR]
         PAAS[opr-paas operator]
         NS[Namespaces]
@@ -80,15 +77,13 @@ flowchart TD
         PAAS --> RBAC
         PAAS --> Q
         PAAS --> KY
-        AS -->|renders Helm chart per Paas CR| ARGO
+        PAAS --> ARGO
     end
 
     PT --> Bootstrap
-    Bootstrap --> GitOps
-    GitOps --> Team
+    Bootstrap --> Team
 
     style Bootstrap fill:#1e3a5f,color:#fff,stroke:#4a90d9
-    style GitOps fill:#1a3a2a,color:#fff,stroke:#4caf50
     style Team fill:#3a1a1a,color:#fff,stroke:#e57373
 ```
 
