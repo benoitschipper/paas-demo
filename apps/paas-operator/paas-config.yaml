@@ -95,6 +95,7 @@ spec:
     namespaceLabels:
       argocd.argoproj.io/managed-by: '{{ .Paas.Name }}-argocd'
       cpet.belastingdienst.nl/created-by: opr-paas
+      openshift.io/cluster-monitoring: 'true' # Make metrics go to cluster mon for ease of use
   validations:
     paas:
       allowedQuotas: ^(limits.memory|requests.cpu|requests.memory|requests.storage)$
