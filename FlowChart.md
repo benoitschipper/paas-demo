@@ -125,6 +125,7 @@ The Platform Team sets up the cluster foundation using the [`demo/`](demo/) repo
 - Installs all required operators (opr-paas, ArgoCD, Kyverno, Sealed Secrets, Grafana Operator)
 - Applies a `PaasConfig` that defines which capabilities are available (ArgoCD, Grafana, SSO) and how they are templated
 - Bootstraps the platform-level ArgoCD (`openshift-gitops`) which continuously syncs everything in `demo/`
+- In this case, apply the bootstrap applications by hand (for demo purposes)
 
 ### ② DevOps Team — Request an Environment
 The DevOps Team's only interaction with the `demo` repo is a **single YAML file**:
