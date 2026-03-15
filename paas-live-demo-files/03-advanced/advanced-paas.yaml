@@ -1,0 +1,104 @@
+---
+# ============================================================
+# DEMO 3 — Advanced Paas
+# ============================================================
+# Enterprise-grade setup: LDAP-backed groups, all three
+# capabilities, full environment matrix, and fine-grained
+# per-namespace RBAC.
+#
+# What the operator will create:
+#   • 6 namespaces : platform-payments-dev / tst / acc / prd
+#                    / tekton / monitoring
+#   • 4 groups     : platform-admins   (LDAP query → admin)
+#                    developers        (LDAP query → edit)
+#                    release-managers  (LDAP query → edit on acc/prd only)
+#                    auditors          (manual users → view)
+#   • 3 capabilities: ArgoCD + Grafana + SSO (Keycloak)
+#   • Higher resource quotas for a production-grade workload
+#
+# Key concepts shown here vs. Demo 2:
+#   ✔ LDAP/AD group queries instead of individual users
+#   ✔ SSO capability (Keycloak) for application authentication
+#   ✔ acc namespace for acceptance testing before production
+#   ✔ Dedicated monitoring namespace
+#   ✔ Per-namespace group scoping (release-managers only on acc/prd)
+#   ✔ Mixed group membership: LDAP query + explicit users in same Paas
+# ============================================================
+apiVersion: cpet.belastingdienst.nl/v1alpha2
+kind: Paas
+metadata:
+  name: platform-payments
+spec:
+  quota:
+    limits.memory: 64Gi
+    requests.cpu: "16"
+    requests.memory: 32Gi
+    requests.storage: 200Gi
+  capabilities:
+    argocd:
+      custom_fields:
+        git_url: "https://github.com/my-org/platform-payments.git"
+        git_revision: main
+        git_path: argocd/bootstrap
+    grafana: {}
+    sso: {}
+  groups:
+    # ── LDAP-backed groups ──────────────────────────────────
+    # The operator resolves these CN queries against your
+    # corporate Active Directory / LDAP directory.
+    # No need to list individual users — group membership is
+    # managed centrally in AD.
+    platform-admins:
+      query: "CN=payments-platform-admins,OU=Groups,DC=example,DC=com"
+      roles:
+        - admin
+    developers:
+      query: "CN=payments-developers,OU=Groups,DC=example,DC=com"
+      roles:
+        - edit
+    release-managers:
+      query: "CN=payments-release-managers,OU=Groups,DC=example,DC=com"
+      roles:
+        - edit
+    # ── Manually managed group ──────────────────────────────
+    # Useful for external stakeholders or auditors who are not
+    # in your corporate directory.
+    auditors:
+      users:
+        - external-auditor@compliance-firm.com
+        - internal-auditor@example.com
+      roles:
+        - view
+  namespaces:
+    # Development — all engineers have access
+    dev:
+      groups:
+        - platform-admins
+        - developers
+    # Test — same as dev
+    tst:
+      groups:
+        - platform-admins
+        - developers
+    # Acceptance — release managers gate production promotions
+    acc:
+      groups:
+        - platform-admins
+        - developers
+        - release-managers
+    # Production — release managers + auditors can view
+    prd:
+      groups:
+        - platform-admins
+        - release-managers
+        - auditors
+    # Tekton CI/CD pipelines — engineers only
+    tekton:
+      groups:
+        - platform-admins
+        - developers
+    # Dedicated monitoring namespace for Grafana datasources
+    monitoring:
+      groups:
+        - platform-admins
+        - auditors

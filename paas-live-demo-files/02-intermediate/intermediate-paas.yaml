@@ -1,0 +1,72 @@
+---
+# ============================================================
+# DEMO 2 — Intermediate Paas
+# ============================================================
+# A realistic team setup: multiple environments, role separation,
+# and observability via Grafana.
+#
+# What the operator will create:
+#   • 4 namespaces : team-shop-dev / tst / prd / tekton
+#   • 3 groups     : admins (admin), developers (edit), viewers (view)
+#   • 2 capabilities: ArgoCD + Grafana
+#   • Resource quotas enforced across all namespaces
+#
+# Key concepts shown here vs. Demo 1:
+#   ✔ Multiple namespaces per environment stage
+#   ✔ Separate groups with different permission levels
+#   ✔ Grafana capability for team observability
+#   ✔ Tekton namespace for CI pipelines
+# ============================================================
+apiVersion: cpet.belastingdienst.nl/v1alpha2
+kind: Paas
+metadata:
+  name: team-shop
+spec:
+  quota:
+    limits.memory: 16Gi
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    requests.storage: 25Gi
+  capabilities:
+    argocd:
+      custom_fields:
+        git_url: "https://github.com/my-org/team-shop.git"
+        git_revision: main
+        git_path: argocd/bootstrap
+    grafana: {}
+  groups:
+    admins:
+      users:
+        - alice@example.com
+        - bob@example.com
+      roles:
+        - admin
+    developers:
+      users:
+        - carol@example.com
+        - dave@example.com
+        - eve@example.com
+      roles:
+        - edit
+    viewers:
+      users:
+        - product-owner@example.com
+      roles:
+        - view
+  namespaces:
+    dev:
+      groups:
+        - admins
+        - developers
+    tst:
+      groups:
+        - admins
+        - developers
+    prd:
+      groups:
+        - admins
+        - developers
+    tekton:
+      groups:
+        - admins
+        - developers
