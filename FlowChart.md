@@ -3,7 +3,7 @@
 This document explains how the **Platform Team** and **DevOps Teams** interact with the [opr-paas](https://github.com/belastingdienst/opr-paas) operator, and how a DevOps team goes from a single YAML file to a fully running application on OpenShift.
 
 > 📂 **Further reading**
-> - [`demo/`](demo/README.md) — Platform Team repo: operator install, PaasConfig, platform ArgoCD bootstrap, capability Helm charts
+> - [`paas-demo/`](paas-demo/README.md) — Platform Team repo: operator install, PaasConfig, platform ArgoCD bootstrap, capability Helm charts
 > - [`paas-demo-app/`](paas-demo-app/README.md) — DevOps Team repo: application code, ArgoCD bootstrap, deploy manifests, Grafana dashboard
 
 ---
@@ -12,7 +12,7 @@ This document explains how the **Platform Team** and **DevOps Teams** interact w
 
 | | Platform Team | DevOps Team |
 |---|---|---|
-| **Repo** | `demo/` | `demo/apps/example-paas/` + `paas-demo-app/` |
+| **Repo** | `paas-demo/` | `paas-demo/apps/example-paas/` + `paas-demo-app/` |
 | **What they own** | Cluster bootstrap, operators, PaasConfig, platform ArgoCD | Their `Paas` CR, their application code, their ArgoCD apps |
 | **Done once?** | Yes — bootstrap is a one-time setup | No — teams iterate on their app continuously |
 
@@ -30,19 +30,19 @@ flowchart TD
     subgraph PLATFORM ["① Platform Team — Bootstrap (done once)  [repo: demo]"]
         direction TB
         P1["Install operators on cluster<br/>(opr-paas, ArgoCD, Kyverno,<br/>Sealed Secrets, Grafana Operator)"]
-        P2["Apply PaasConfig<br/>demo/apps/paas-operator/paas-config.yaml<br/>Defines capabilities: argocd, grafana, sso"]
-        P3["Bootstrap platform ArgoCD<br/>demo/bootstrap/<br/>Applications for operator + capabilities"]
+        P2["Apply PaasConfig<br/>paas-demo/apps/paas-operator/paas-config.yaml<br/>Defines capabilities: argocd, grafana, sso"]
+        P3["Bootstrap platform ArgoCD<br/>paas-demo/bootstrap/<br/>Applications for operator + capabilities"]
         P4["Platform ArgoCD<br/>(openshift-gitops)<br/>Syncs all platform apps continuously"]
-        P5["ApplicationSets<br/>demo/apps/paas-capabilities/<br/>appset_paas-argocd / grafana / sso"]
+        P5["ApplicationSets<br/>paas-demo/apps/paas-capabilities/<br/>appset_paas-argocd / grafana / sso"]
 
         P1 --> P2 --> P3 --> P4 --> P5
     end
 
     %% ② DEVOPS PAAS CR
-    subgraph DEVOPS_CONFIG ["② DevOps Team — Request Environment  [repo: demo/apps/example-paas]"]
+    subgraph DEVOPS_CONFIG ["② DevOps Team — Request Environment  [repo: paas-demo/apps/example-paas]"]
         direction TB
-        D1["DevOps Team writes Paas CR<br/>demo/apps/example-paas/example-paas.yaml<br/>• quotas  • namespaces  • groups/RBAC<br/>• capabilities: argocd → git_url: paas-demo-app"]
-        D2["Platform Team syncs this path<br/>via ArgoCD Application:<br/>demo/bootstrap/app_example-paas.yaml"]
+        D1["DevOps Team writes Paas CR<br/>paas-demo/apps/example-paas/example-paas.yaml<br/>• quotas  • namespaces  • groups/RBAC<br/>• capabilities: argocd → git_url: paas-demo-app"]
+        D2["Platform Team syncs this path<br/>via ArgoCD Application:<br/>paas-demo/bootstrap/app_example-paas.yaml"]
         D1 --> D2
     end
 
@@ -121,22 +121,22 @@ flowchart TD
 ## Step-by-step explanation
 
 ### ① Platform Team — Bootstrap *(done once)*
-The Platform Team sets up the cluster foundation using the [`demo/`](demo/) repo:
+The Platform Team sets up the cluster foundation using the [`paas-demo/`](paas-demo/) repo:
 - Installs all required operators (opr-paas, ArgoCD, Kyverno, Sealed Secrets, Grafana Operator)
 - Applies a `PaasConfig` that defines which capabilities are available (ArgoCD, Grafana, SSO) and how they are templated
-- Bootstraps the platform-level ArgoCD (`openshift-gitops`) which continuously syncs everything in `demo/`
+- Bootstraps the platform-level ArgoCD (`openshift-gitops`) which continuously syncs everything in `paas-demo/`
 - In this case, apply the bootstrap applications by hand (for demo purposes)
 
 ### ② DevOps Team — Request an Environment
 The DevOps Team's only interaction with the `demo` repo is a **single YAML file**:
-[`demo/apps/example-paas/example-paas.yaml`](demo/apps/example-paas/example-paas.yaml)
+[`paas-demo/apps/example-paas/example-paas.yaml`](paas-demo/apps/example-paas/example-paas.yaml)
 
 This `Paas` CR declares:
 - Which namespaces they need (`dev`, `tst`, `acc`, `prd`, `tekton`)
 - Who gets access and with what role (admins, developers, viewers)
 - Which capabilities to enable, and for ArgoCD: which Git repo to bootstrap from
 
-The Platform Team's ArgoCD syncs this file to the cluster via [`demo/bootstrap/app_example-paas.yaml`](demo/bootstrap/app_example-paas.yaml).
+The Platform Team's ArgoCD syncs this file to the cluster via [`paas-demo/bootstrap/app_example-paas.yaml`](paas-demo/bootstrap/app_example-paas.yaml).
 
 ### ③ opr-paas Operator — Automatic Provisioning
 Once the `Paas` CR lands on the cluster, the operator takes over and automatically provisions:
