@@ -1,27 +1,95 @@
-1. Install Community Grafana Operator via UI
-2. Install RedHat OpenShift GitOps Operator
- * Patch OpenShift GitOps argocd.yaml 
-       ```
-        oc patch argocd openshift-gitops \
-        -n openshift-gitops \
-        --type=merge \
-        -p '{"spec": {"kustomizeBuildOptions": "--load-restrictor LoadRestrictionsNone --enable-helm"}}'
-        ```
- * Restart all pods `for i in $(oc get pods -n openshift-gitops | awk '{print $1}' | grep -v NAME);do oc delete pod $i -n openshift-gitops;done` or use `oc rollout deployment etc..`
-3. Install Red Hat OpenShift Pipelines
-4. Install cert-manager Operator
-5. Quick Install opr-paas operator
-    - https://github.com/belastingdienst/opr-paas
-    - ran 'kubectl apply -f https://github.com/belastingdienst/opr-paas/releases/latest/download/install.yaml'
-    - did NOT use -> as it did not work 'kubectl apply -f https://raw.githubusercontent.com/belastingdienst/opr-paas/refs/heads/main/examples/resources/_v1alpha2_paasconfig.yaml'
-6. Added Example keys and added paas-config from paas-config dir
-7. created cluster-admins group to have rights in openshift-gitops within argocd
-8. we gave sufficient rights to argocd in gitops
-9. added gitops-operator var to kind: Subscription
+# PaaS Demo — OpenShift GitOps Platform
+
+This repo is a **booth demo** showing how teams can self-service their own platform environment on OpenShift using the [opr-paas](https://github.com/belastingdienst/opr-paas) operator, GitOps, and policy-as-code.
+
+---
+
+## What it demonstrates
+
+A developer submits a single `Paas` custom resource (see [`example-paas.yaml`](example-paas.yaml)) and gets a fully provisioned, isolated platform environment — automatically:
+
+- **Namespaces** (`dev`, `tst`, `acc`, `prd`, `tekton`) with RBAC applied
+- **ArgoCD** instance scoped to the team, bootstrapped from their own Git repo
+- **Grafana** instance with Prometheus datasource pre-wired
+- **SSO** (Keycloak) for authentication
+- **Resource quotas** enforced per environment
+- **Network policies** auto-generated via Kyverno
+
+---
+
+## Stack
+
+| Component | Role |
+|---|---|
+| [opr-paas](https://github.com/belastingdienst/opr-paas) | Core operator — provisions namespaces, RBAC, quotas, capabilities |
+| OpenShift GitOps (ArgoCD) | Cluster-level GitOps, bootstraps all apps |
+| OpenShift Pipelines (Tekton) | CI/CD pipelines per team |
+| Kyverno | Policy enforcement & auto-generated network policies |
+| Grafana Operator | Per-team Grafana instances |
+| Sealed Secrets | Encrypted secrets safe to store in Git |
+| cert-manager | TLS certificate management |
+
+---
+
+## Repo structure
+
 ```
-  config:
-    env:
-      - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
-        value: openshift-gitops
-``` 
-10. Deployed Kyverno and Added kyverno Policies
+bootstrap/        # ArgoCD Applications that bootstrap the platform
+apps/
+  paas-operator/  # opr-paas operator install + PaasConfig
+  paas-capabilities/ # ApplicationSets for ArgoCD, Grafana, SSO capabilities
+  kyverno/        # Kyverno policies (network policies, self-provisioner lockdown)
+  sealed-secrets/ # Sealed Secrets controller
+helm/
+  capability-*/   # Helm charts for each PaaS capability
+example-paas.yaml # Example: one Paas CR = one full team environment
+```
+
+---
+
+## How it works
+
+```mermaid
+flowchart TD
+    PT([Platform Team])
+
+    subgraph Bootstrap ["① Bootstrap — done once"]
+        OP[Install Operators\nArgoCD · Pipelines · cert-manager\nKyverno · Grafana · Sealed Secrets]
+        PC[Apply PaasConfig\nquotas · capabilities · RBAC templates]
+        BA[Bootstrap ArgoCD Applications\npaas-operator · paas-capabilities\nkyverno · sealed-secrets]
+        OP --> PC --> BA
+    end
+
+    subgraph GitOps ["② Cluster GitOps — continuous"]
+        AG[ArgoCD openshift-gitops\nwatches this repo]
+        AS[ApplicationSets\npaas-argocd · paas-grafana · paas-sso]
+        AG --> AS
+    end
+
+    subgraph Team ["③ Team onboarding"]
+        PR[Team submits\nexample-paas.yaml\nPaas CR]
+        PAAS[opr-paas operator\nprovisions environment]
+        NS[Namespaces\ndev · tst · acc · prd · tekton]
+        RBAC[RBAC & Groups\nfrom Paas spec]
+        Q[Resource Quotas]
+        KY[Kyverno generates\nNetwork Policies]
+        ARGO[Team ArgoCD instance\nscoped to team namespaces]
+
+        PR --> PAAS
+        PAAS --> NS
+        PAAS --> RBAC
+        PAAS --> Q
+        PAAS --> KY
+        AS -->|renders Helm chart\nper Paas CR| ARGO
+    end
+
+    PT --> Bootstrap
+    Bootstrap --> GitOps
+    GitOps --> Team
+
+    style Bootstrap fill:#1e3a5f,color:#fff,stroke:#4a90d9
+    style GitOps fill:#1a3a2a,color:#fff,stroke:#4caf50
+    style Team fill:#3a1a1a,color:#fff,stroke:#e57373
+```
+
+> **One YAML file. One team. Full environment.**
